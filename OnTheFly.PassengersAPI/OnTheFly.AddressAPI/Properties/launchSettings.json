@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "OnTheFly.PassengersAPI": {
+    "OnTheFly.AddressAPI": {
       "commandName": "Project",
       "launchBrowser": false,
       "launchUrl": "weatherforecast",
@@ -8,7 +8,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7298;http://localhost:5151"
+      "applicationUrl": "https://localhost:7217;http://localhost:5244"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -34,8 +34,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:29680",
-      "sslPort": 44382
+      "applicationUrl": "http://localhost:8780",
+      "sslPort": 44333
     }
   }
 }
