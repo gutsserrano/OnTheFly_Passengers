@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFly.PassengersAPI", "OnTheFly.PassengersAPI\OnTheFly.PassengersAPI.csproj", "{05565F6E-8FEC-44EC-9262-30463F4B7F42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05565F6E-8FEC-44EC-9262-30463F4B7F42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05565F6E-8FEC-44EC-9262-30463F4B7F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05565F6E-8FEC-44EC-9262-30463F4B7F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05565F6E-8FEC-44EC-9262-30463F4B7F42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB3951BF-490B-473A-AEC0-5A0C0BCC1F59}
+	EndGlobalSection
+EndGlobal
