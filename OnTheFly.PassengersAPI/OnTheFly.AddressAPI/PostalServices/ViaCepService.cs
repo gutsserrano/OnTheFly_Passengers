@@ -38,13 +38,34 @@ namespace OnTheFly.AddressAPI.PostalServices
             {
                 HttpResponseMessage response = await client.GetAsync(_url + zipcode + "/json");
 
-                if (!response.IsSuccessStatusCode)
+                if (await IsErrorResponse(response))
                     return null;
 
                 string data = await response.Content.ReadAsStringAsync();
 
                 return ViaCepAddressResult.FromJson(data);
             }
+        }
+
+        private async Task<bool> IsErrorResponse(HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+                return true;
+
+            string json = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                var root = JsonDocument.Parse(json).RootElement;
+
+                if (root.TryGetProperty("erro", out var error) && error.GetBoolean())
+                    return true;
+            }
+            catch (JsonException)
+            {
+            }
+
+            return false;
         }
     }
 }
