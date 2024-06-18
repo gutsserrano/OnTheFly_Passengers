@@ -9,61 +9,73 @@
 - **Parâmetros**: Nenhum.
 - **Exemplo de Resposta**:
   ```json
-    {
-        "take": 10,
-        "page": 1,
-        "total": 1,
-        "pages": 1,
-        "nextPage": 1,
-        "previousPage": 1,
-        "hasNextPage": false,
-        "hasPreviousPage": false,
-        "data": [
-            {
-                "id": 1,
-                "name": "Luis",
-                "surname": "Brandino",
-                "identification_number": "000.000.000-01",
-                "city": "Mat├úo",
-                "phone": "(16) 99700-2606",
-                "cep": "12345678",
-                "address": "R. Das Casas",
-                "building_number": "1",
-                "email": "luis@brasilux.com.br",
-                "reference": "Brasilux"
-            }
-        ]
-    }
+    [
+        {
+            "zipcode": "15990-540",
+            "number": "5",
+            "street": "Avenida Trolesi",
+            "complement": "Casa A",
+            "city": "Matão",
+            "state": "SP"
+        },
+        { 
+            "zipcode": "15990-640",
+            "number": "5",
+            "street": "Avenida Siqueira Campos",
+            "complement": "Casa A",
+            "city": "Matão",
+            "state": "SP"
+        },
+        {
+            "zipcode": "15990-740",
+            "number": "5",
+            "street": "Avenida José Gonçalves",
+            "complement": "Casa A",
+            "city": "Matão",
+            "state": "SP"
+        }
+    ]
   ```
   
-### 2. Criar um novo cliente
+### 2. Encontrar um endereço
 
-- **Endpoint**: `POST /client`
-- **Descrição**: Cria um novo cliente no sistema.
-- **Corpo da requisição**:
+- **Endpoint**: `GET /api/addresses/zipcode/:zipcode/number/:number`
+- **Descrição**: Retorna o endereço com base no código postal e número residencial, se cadastrado.
+- **Parâmetros**:
+    - **zipcode**: string
+    - **number**: string
+- **Exemplo de Resposta**:
     ```json
     {
-        "name": "Lúcia Rosa Eduarda"
-        "surname": "Araújo"
-        "identification_number": "773.998.379-96" // CPF ou CNPJ
-        "city": "São José dos Campos"
-        "cep": "12228-500"
-        "address": "Rua H19B"
-        "building_number": "292"
-        "email": "lucia-araujo86@regional.com.br"
-        "phone": "12986818734"
-        "reference": "Próximo ao cemitério" // Opcional
+        "zipcode": "15990-540",
+        "number": "5",
+        "street": "Avenida Trolesi",
+        "complement": "Casa A",
+        "city": "Matão",
+        "state": "SP"
     }
     ```
       
-### 3. Alterar um cliente
+### 3. Cadastrar um endereço
 
-- **Endpoint**: `POST /client/:id/edit`
-- **Descrição**: Atualiza um cliente existente com base no ID fornecido.
-- **Parâmetros**: ID do cliente a ser atualizado na URL.
+- **Endpoint**: `POST /api/addresses`
+- **Descrição**: Cadastra um novo endereço com base no código postal e número.
 - **Corpo da requisição**:
     ```json
     {
-        "surname": "Araújo dos Santos" // Enviado somente os campos a serem modificados
+        "zipcode": "15990-820",
+        "number": "156",
+        "complement": "Casa B" // Opcional
+    }
+    ```
+- **Exemplo de Resposta**:
+    ```json
+    {
+        "zipcode": "15990-820",
+        "number": "156",
+        "street": "Avenida Jornalista José da Costa Filho",
+        "complement": "Casa B",
+        "city": "Matão",
+        "state": "SP"
     }
     ```
