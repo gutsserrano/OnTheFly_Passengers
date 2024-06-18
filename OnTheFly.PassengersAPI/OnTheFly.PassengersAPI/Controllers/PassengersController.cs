@@ -103,7 +103,7 @@ namespace OnTheFly.PassengersAPI.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(passenger);
         }
 
         // POST: api/Passengers
