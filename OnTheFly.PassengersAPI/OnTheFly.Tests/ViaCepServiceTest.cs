@@ -18,9 +18,20 @@ namespace OnTheFly.Tests
         }
 
         [Fact]
+        public void GetAddress_IncorrectZipcodeLength_ReturnsNull()
+        {
+            string zipcode = "0000000000";
+            var service = new ViaCepService();
+
+            IAddressResult? result = service.Fetch(zipcode).Result;
+
+            Assert.Null(result);
+        }
+
+        [Fact]
         public void GetAddress_IncorrectZipcode_ReturnsNull()
         {
-            string zipcode = "00000-0000";
+            string zipcode = "00000-000";
             var service = new ViaCepService();
 
             IAddressResult? result = service.Fetch(zipcode).Result;
