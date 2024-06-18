@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using OnTheFly.PassengersAPI.Data;
+using Services;
 
 namespace OnTheFly.PassengersAPI.Controllers
 {
@@ -15,10 +16,12 @@ namespace OnTheFly.PassengersAPI.Controllers
     public class PassengersController : ControllerBase
     {
         private readonly OnTheFlyPassengersAPIContext _context;
+        private readonly UpdatePassengerService _updatePassengerService;
 
-        public PassengersController(OnTheFlyPassengersAPIContext context)
+        public PassengersController(OnTheFlyPassengersAPIContext context, UpdatePassengerService updatePassengerService)
         {
             _context = context;
+            _updatePassengerService = updatePassengerService;
         }
 
         // GET: api/Passengers
@@ -72,15 +75,17 @@ namespace OnTheFly.PassengersAPI.Controllers
 
         // PUT: api/Passengers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPassenger(string id, Passenger passenger)
+        [HttpPut("{cpf}")]
+        public async Task<IActionResult> PutPassenger(string cpf, PassengerUpdateDTO passengerUpdateDTO)
         {
-            if (id != passenger.Cpf)
+            if (cpf != passengerUpdateDTO.Cpf)
             {
                 return BadRequest();
             }
 
-            _context.Entry(passenger).State = EntityState.Modified;
+            Passenger passenger = GetPassenger(passengerUpdateDTO.Cpf).Result.Value;
+
+            _context.Entry(_updatePassengerService.UpdatePassenger(passenger, passengerUpdateDTO)).State = EntityState.Modified;
 
             try
             {
@@ -88,7 +93,7 @@ namespace OnTheFly.PassengersAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PassengerExists(id))
+                if (!PassengerExists(cpf))
                 {
                     return NotFound();
                 }
@@ -98,7 +103,7 @@ namespace OnTheFly.PassengersAPI.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(passenger);
         }
 
         // POST: api/Passengers
