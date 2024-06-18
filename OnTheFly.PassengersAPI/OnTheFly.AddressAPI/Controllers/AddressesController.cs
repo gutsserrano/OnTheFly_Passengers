@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using OnTheFly.AddressAPI.Data;
+using OnTheFly.AddressAPI.PostalServices.Abstract;
 
 namespace OnTheFly.AddressAPI.Controllers
 {
@@ -15,150 +17,69 @@ namespace OnTheFly.AddressAPI.Controllers
     public class AddressesController : ControllerBase
     {
         private readonly OnTheFlyAddressAPIContext _context;
+        private readonly IPostalAddressService _service;
 
-        public AddressesController(OnTheFlyAddressAPIContext context)
+        public AddressesController(OnTheFlyAddressAPIContext context, IPostalAddressService service)
         {
             _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Address>>> Get()
         {
-            return new List<Address> { new Address() };
+            return Ok(await _context.Address.ToListAsync());
         }
 
         [HttpGet("zipcode/{zipcode}/number/{number}")]
         public async Task<ActionResult<Address>> Get(string zipcode, string number)
         {
-            return new Address()
-            {
-                ZipCode = zipcode,
-                Number = number
-            };
+            var address = await _context.Address.Where(
+                address => address.ZipCode.Replace("-", "") == zipcode.Replace("-", "") && 
+                address.Number == number
+            ).FirstOrDefaultAsync();
+
+            if (address == null)
+                return NotFound();
+
+            return Ok(address);
         }
 
         [HttpPost]
         public async Task<ActionResult<Address>> Post(AddressDTO addressDTO)
         {
+            bool addressExists = await AddressExistsAsync(addressDTO);
 
+            if (addressExists)
+                return Conflict("Endereço já cadastrado");
 
-            return new Address() { };
-        }
+            IAddressResult? result = await _service.Fetch(addressDTO.ZipCode);
 
-        /*
-        // GET: api/Addresses
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Address>>> GetAddress()
-        {
-          if (_context.Address == null)
-          {
-              return NotFound();
-          }
-            return await _context.Address.ToListAsync();
-        }
+            if (result == null)
+                return BadRequest();
 
-        // GET: api/Addresses/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Address>> GetAddress(string id)
-        {
-          if (_context.Address == null)
-          {
-              return NotFound();
-          }
-            var address = await _context.Address.FindAsync(id);
-
-            if (address == null)
+            var address = new Address
             {
-                return NotFound();
-            }
+                Complement = addressDTO.Complement,
+                Number = addressDTO.Number,
+                ZipCode = result.Zipcode,
+                State = result.State,
+                Street = result.Street,
+                City = result.City
+            };
+
+            _context.Address.Add(address);
+            await _context.SaveChangesAsync();
 
             return address;
         }
 
-        // PUT: api/Addresses/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAddress(string id, Address address)
+        public async Task<bool> AddressExistsAsync(AddressDTO addressDTO)
         {
-            if (id != address.ZipCode)
-            {
-                return BadRequest();
-            }
+            bool addressExists = await _context.Address
+                .AnyAsync(address => address.ZipCode.Replace("-", "") == addressDTO.ZipCode.Replace("-", "") && address.Number == addressDTO.Number);
 
-            _context.Entry(address).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AddressExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return addressExists;
         }
-
-        // POST: api/Addresses
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Address>> PostAddress(Address address)
-        {
-          if (_context.Address == null)
-          {
-              return Problem("Entity set 'OnTheFlyAddressAPIContext.Address'  is null.");
-          }
-            _context.Address.Add(address);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (AddressExists(address.ZipCode))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetAddress", new { id = address.ZipCode }, address);
-        }
-
-        // DELETE: api/Addresses/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAddress(string id)
-        {
-            if (_context.Address == null)
-            {
-                return NotFound();
-            }
-            var address = await _context.Address.FindAsync(id);
-            if (address == null)
-            {
-                return NotFound();
-            }
-
-            _context.Address.Remove(address);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool AddressExists(string id)
-        {
-            return (_context.Address?.Any(e => e.ZipCode == id)).GetValueOrDefault();
-        }
-        */
     }
 }
