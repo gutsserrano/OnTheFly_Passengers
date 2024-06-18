@@ -17,60 +17,56 @@ namespace OnTheFly.PassengersAPI.Controllers
     {
         private readonly OnTheFlyPassengersAPIContext _context;
         private readonly UpdatePassengerService _updatePassengerService;
+        private readonly GetPassengerService _getPassengerService;
 
-        public PassengersController(OnTheFlyPassengersAPIContext context, UpdatePassengerService updatePassengerService)
+        public PassengersController(OnTheFlyPassengersAPIContext context, UpdatePassengerService updatePassengerService, GetPassengerService getPassengerService)
         {
             _context = context;
             _updatePassengerService = updatePassengerService;
+            _getPassengerService = getPassengerService;
         }
 
         // GET: api/Passengers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Passenger>>> GetPassenger()
         {
-            /*if (_context.Passenger == null)
+            if (_context.Passenger == null)
             {
                 return NotFound();
             }
-              return await _context.Passenger.ToListAsync();*/
 
-            return new List<Passenger>
+            List<Passenger> passengers = await _context.Passenger.ToListAsync();
+
+            foreach(var p in passengers)
             {
-                new Passenger
-                {
-                    Cpf = "12345678901",
-                    Name = "John Doe",
-                    DtBirth = new DateTime(1990, 1, 1),
-                    DtRegister = DateTime.Now,
-                    Address = new Address
-                    {
-                        Street = "Main St",
-                        Number = "123",
-                        City = "Springfield",
-                        State = "IL"
-                    },
-                    AddressNumber = "123",
-                    AddressZipCode = "12345"
-                }
-            };
+                Address address = await _getPassengerService.GetAddress(p.AddressZipCode, p.AddressNumber);
+
+                p.Address = address;
+            }
+
+            return passengers;
+
         }
 
         // GET: api/Passengers/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Passenger>> GetPassenger(string id)
+        [HttpGet("{cpf}")]
+        public async Task<ActionResult<Passenger>> GetPassenger(string cpf)
         {
-          if (_context.Passenger == null)
-          {
-              return NotFound();
-          }
-            var passenger = await _context.Passenger.FindAsync(id);
-
-            if (passenger == null)
+            if (_context.Passenger == null)
             {
-                return NotFound();
+                return null;
             }
 
+            Passenger passenger = await _context.Passenger.Where(p => p.Cpf == cpf).FirstOrDefaultAsync();
+
+            if (passenger == null) { return NotFound(); }
+
+            Address address = await _getPassengerService.GetAddress(passenger.AddressZipCode, passenger.AddressNumber);
+
+            passenger.Address = address;
+
             return passenger;
+
         }
 
         // PUT: api/Passengers/5

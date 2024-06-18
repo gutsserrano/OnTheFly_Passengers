@@ -12,6 +12,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<UpdatePassengerService>();
 
+builder.Services.AddSingleton<GetPassengerService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

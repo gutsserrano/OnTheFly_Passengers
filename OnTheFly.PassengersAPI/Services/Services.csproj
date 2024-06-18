@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
+    <ProjectReference Include="..\OnTheFly.AddressAPI\OnTheFly.AddressAPI.csproj" />
   </ItemGroup>
 
 </Project>
