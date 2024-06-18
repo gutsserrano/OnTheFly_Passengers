@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using OnTheFly.PassengersAPI.Data;
+using Services;
 
 namespace OnTheFly.PassengersAPI.Controllers
 {
@@ -15,10 +16,12 @@ namespace OnTheFly.PassengersAPI.Controllers
     public class PassengersController : ControllerBase
     {
         private readonly OnTheFlyPassengersAPIContext _context;
+        private readonly CreatePassengerService _createPassengerService;
 
-        public PassengersController(OnTheFlyPassengersAPIContext context)
+        public PassengersController(OnTheFlyPassengersAPIContext context, CreatePassengerService createPassengerService)
         {
             _context = context;
+            _createPassengerService = createPassengerService;
         }
 
         // GET: api/Passengers
@@ -56,10 +59,10 @@ namespace OnTheFly.PassengersAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Passenger>> GetPassenger(string id)
         {
-          if (_context.Passenger == null)
-          {
-              return NotFound();
-          }
+            if (_context.Passenger == null)
+            {
+                return NotFound();
+            }
             var passenger = await _context.Passenger.FindAsync(id);
 
             if (passenger == null)
@@ -101,33 +104,24 @@ namespace OnTheFly.PassengersAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Passengers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Passenger>> PostPassenger(Passenger passenger)
+        public async Task<ActionResult<Passenger>> PostPassenger(PassengerDTO passengerDTO)
         {
-          if (_context.Passenger == null)
-          {
-              return Problem("Entity set 'OnTheFlyPassengersAPIContext.Passenger'  is null.");
-          }
-            _context.Passenger.Add(passenger);
+            Passenger passenger = null;
+
             try
             {
-                await _context.SaveChangesAsync();
+                Address address = await _createPassengerService.GetAddress(passengerDTO.AddressDTO);
+                passenger = await _createPassengerService.CreatePassenger(passengerDTO, address);
+
+                _context.Passenger.Add(passenger);
             }
-            catch (DbUpdateException)
+            catch (Exception e)
             {
-                if (PassengerExists(passenger.Cpf))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(e.Message);
             }
 
-            return CreatedAtAction("GetPassenger", new { id = passenger.Cpf }, passenger);
+            return Ok(passenger);
         }
 
         // DELETE: api/Passengers/5
