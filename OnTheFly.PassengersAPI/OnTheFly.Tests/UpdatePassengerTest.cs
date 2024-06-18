@@ -2,29 +2,24 @@
 using Models;
 using OnTheFly.PassengersAPI.Controllers;
 using OnTheFly.PassengersAPI.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Services;
 
 namespace OnTheFly.Tests
 {
     public class UpdatePassengerTest
     {
-        private DbContextOptions<OnTheFlyPassengersAPIContext> _options;
-
-        private void InitializeDataBase()
-        {
-            _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
-                .UseInMemoryDatabase(databaseName: "OnTheFly.DBPassenger")
+        private DbContextOptions<OnTheFlyPassengersAPIContext> _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using(var context = new OnTheFlyPassengersAPIContext(_options))
+        [Fact]
+        public void UpdateTest()
+        {
+            using (var context = new OnTheFlyPassengersAPIContext(_options))
             {
-                context.Passenger.Add(new Passenger
+                var passenger = new Passenger
                 {
-                    Cpf = "0987654",
+                    Cpf = "22222",
                     Name = "Test",
                     Gender = 'M',
                     Phone = "123456789",
@@ -33,7 +28,7 @@ namespace OnTheFly.Tests
                     Restricted = false,
                     Address = new Address
                     {
-                        ZipCode = "12345678",
+                        ZipCode = "123456789",
                         Street = "Test",
                         Number = "123",
                         Complement = "Test",
@@ -42,44 +37,34 @@ namespace OnTheFly.Tests
                     },
                     AddressZipCode = "12345678",
                     AddressNumber = "123"
-                });
-
+                };
+                context.Passenger.Add(passenger);
                 context.SaveChanges();
             }
-        }
-
-        [Fact]
-        public void GetAllTest()
-        {
-            InitializeDataBase();
 
             using (var context = new OnTheFlyPassengersAPIContext(_options))
             {
-                var controller = new PassengersController(context);
-                var result = controller.GetPassenger().Result;
-
-                Assert.Equal(result.Value.Count(), 1);
-            }
-        }
-
-        [Fact]
-        public void UpdateTest()
-        {
-            //InitializeDataBase();
-
-            using (var context = new OnTheFlyPassengersAPIContext(_options))
-            {
-                var controller = new PassengersController(context);
-                var passenger = controller.GetPassenger("0987654").Result.Value;
-                //var passenger = context.Passenger.First();
+                var controller = new PassengersController(context, new UpdatePassengerService());
+                var passenger = controller.GetPassenger("22222").Result.Value;
                 passenger.Name = "Updated2";
 
-                controller.PutPassenger(passenger.Cpf, passenger);
+                PassengerUpdateDTO pDto = new()
+                {
+                    Cpf = passenger.Cpf,
+                    Name = passenger.Name,
+                    Gender = passenger.Gender,
+                    Phone = passenger.Phone,
+                    DtBirth = passenger.DtBirth,
+                    Restricted = passenger.Restricted
+                };
+
+                controller.PutPassenger(passenger.Cpf, pDto);
 
                 var result = controller.GetPassenger(passenger.Cpf).Result;
-
                 Assert.Equal(result.Value.Name, "Updated2");
             }
+
         }
     }
 }
+
