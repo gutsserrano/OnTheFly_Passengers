@@ -16,12 +16,18 @@ namespace OnTheFly.PassengersAPI.Controllers
     public class PassengersController : ControllerBase
     {
         private readonly OnTheFlyPassengersAPIContext _context;
+        private readonly UpdatePassengerService _updatePassengerService;
         private readonly CreatePassengerService _createPassengerService;
+        private readonly GetPassengerService _getPassengerService;
+        private readonly DeletePassengerService _deletePassengerService;
 
-        public PassengersController(OnTheFlyPassengersAPIContext context, CreatePassengerService createPassengerService)
+        public PassengersController(OnTheFlyPassengersAPIContext context, UpdatePassengerService updatePassengerService, CreatePassengerService createPassengerService, GetPassengerService getPassengerService, DeletePassengerService deletePassengerService)
         {
             _context = context;
+            _updatePassengerService = updatePassengerService;
             _createPassengerService = createPassengerService;
+            _getPassengerService = getPassengerService;
+            _deletePassengerService = deletePassengerService;
         }
 
         // GET: api/Passengers
@@ -75,15 +81,17 @@ namespace OnTheFly.PassengersAPI.Controllers
 
         // PUT: api/Passengers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPassenger(string id, Passenger passenger)
+        [HttpPut("{cpf}")]
+        public async Task<IActionResult> PutPassenger(string cpf, PassengerUpdateDTO passengerUpdateDTO)
         {
-            if (id != passenger.Cpf)
+            if (cpf != passengerUpdateDTO.Cpf)
             {
                 return BadRequest();
             }
 
-            _context.Entry(passenger).State = EntityState.Modified;
+            Passenger passenger = GetPassenger(passengerUpdateDTO.Cpf).Result.Value;
+
+            _context.Entry(_updatePassengerService.UpdatePassenger(passenger, passengerUpdateDTO)).State = EntityState.Modified;
 
             try
             {
@@ -91,7 +99,7 @@ namespace OnTheFly.PassengersAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PassengerExists(id))
+                if (!PassengerExists(cpf))
                 {
                     return NotFound();
                 }
@@ -101,7 +109,7 @@ namespace OnTheFly.PassengersAPI.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(passenger);
         }
 
         [HttpPost]
@@ -115,6 +123,7 @@ namespace OnTheFly.PassengersAPI.Controllers
                 passenger = await _createPassengerService.CreatePassenger(passengerDTO, address);
 
                 _context.Passenger.Add(passenger);
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {

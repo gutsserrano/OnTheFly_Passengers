@@ -48,7 +48,9 @@ namespace Services
                 DtBirth = passengerDTO.DtBirth,
                 DtRegister = DateTime.Now,
                 Restricted = false,
-                Address = address
+                Address = address,
+                AddressZipCode = address.ZipCode,
+                AddressNumber = address.Number
             };
 
             return passenger;
