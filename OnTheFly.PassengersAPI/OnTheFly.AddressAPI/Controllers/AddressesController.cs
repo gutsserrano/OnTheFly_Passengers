@@ -76,10 +76,8 @@ namespace OnTheFly.AddressAPI.Controllers
 
         public async Task<bool> AddressExistsAsync(AddressDTO addressDTO)
         {
-            bool addressExists = await _context.Address
+            return await _context.Address
                 .AnyAsync(address => address.ZipCode.Replace("-", "") == addressDTO.ZipCode.Replace("-", "") && address.Number == addressDTO.Number);
-
-            return addressExists;
         }
     }
 }
