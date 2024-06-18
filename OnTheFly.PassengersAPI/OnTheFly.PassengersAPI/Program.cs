@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OnTheFly.PassengersAPI.Data;
+using Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<OnTheFlyPassengersAPIContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("OnTheFlyPassengersAPIContext") ?? throw new InvalidOperationException("Connection string 'OnTheFlyPassengersAPIContext' not found.")));
@@ -8,6 +9,8 @@ builder.Services.AddDbContext<OnTheFlyPassengersAPIContext>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton<UpdatePassengerService>();
 
 var app = builder.Build();
 
