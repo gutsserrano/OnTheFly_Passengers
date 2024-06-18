@@ -61,7 +61,7 @@ namespace OnTheFly.PassengersAPI.Controllers
                 return null;
             }
 
-            Passenger passenger = await _context.Passenger.Where(p => p.Cpf == cpf).FirstOrDefaultAsync();
+            Passenger passenger = await _context.Passenger.Where(p => p.Cpf.Replace(".","").Replace("-","") == cpf.Replace(".", "").Replace("-", "")).FirstOrDefaultAsync();
 
             if (passenger == null) { return NotFound(); }
 

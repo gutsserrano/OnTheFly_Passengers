@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<UpdatePassengerService>();
 builder.Services.AddSingleton<CreatePassengerService>();
-
+builder.Services.AddSingleton<DeletePassengerService>();
 builder.Services.AddSingleton<GetPassengerService>();
 
 var app = builder.Build();
