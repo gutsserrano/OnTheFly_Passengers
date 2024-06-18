@@ -3,7 +3,7 @@
     "OnTheFly.AddressAPI": {
       "commandName": "Project",
       "launchBrowser": false,
-      "launchUrl": "weatherforecast",
+      "launchUrl": "address",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

@@ -21,6 +21,31 @@ namespace OnTheFly.AddressAPI.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Address>>> Get()
+        {
+            return new List<Address> { new Address() };
+        }
+
+        [HttpGet("zipcode/{zipcode}/number/{number}")]
+        public async Task<ActionResult<Address>> Get(string zipcode, string number)
+        {
+            return new Address()
+            {
+                ZipCode = zipcode,
+                Number = number
+            };
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Address>> Post(AddressDTO addressDTO)
+        {
+
+
+            return new Address() { };
+        }
+
+        /*
         // GET: api/Addresses
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Address>>> GetAddress()
@@ -134,5 +159,6 @@ namespace OnTheFly.AddressAPI.Controllers
         {
             return (_context.Address?.Any(e => e.ZipCode == id)).GetValueOrDefault();
         }
+        */
     }
 }
