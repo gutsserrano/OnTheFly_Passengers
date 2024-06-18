@@ -17,60 +17,60 @@ namespace OnTheFly.PassengersAPI.Controllers
     {
         private readonly OnTheFlyPassengersAPIContext _context;
         private readonly UpdatePassengerService _updatePassengerService;
+        private readonly CreatePassengerService _createPassengerService;
+        private readonly GetPassengerService _getPassengerService;
+        private readonly DeletePassengerService _deletePassengerService;
 
-        public PassengersController(OnTheFlyPassengersAPIContext context, UpdatePassengerService updatePassengerService)
+        public PassengersController(OnTheFlyPassengersAPIContext context, UpdatePassengerService updatePassengerService, CreatePassengerService createPassengerService, GetPassengerService getPassengerService, DeletePassengerService deletePassengerService)
         {
             _context = context;
             _updatePassengerService = updatePassengerService;
+            _createPassengerService = createPassengerService;
+            _getPassengerService = getPassengerService;
+            _deletePassengerService = deletePassengerService;
         }
 
         // GET: api/Passengers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Passenger>>> GetPassenger()
         {
-            /*if (_context.Passenger == null)
+            if (_context.Passenger == null)
             {
                 return NotFound();
             }
-              return await _context.Passenger.ToListAsync();*/
 
-            return new List<Passenger>
+            List<Passenger> passengers = await _context.Passenger.ToListAsync();
+
+            foreach(var p in passengers)
             {
-                new Passenger
-                {
-                    Cpf = "12345678901",
-                    Name = "John Doe",
-                    DtBirth = new DateTime(1990, 1, 1),
-                    DtRegister = DateTime.Now,
-                    Address = new Address
-                    {
-                        Street = "Main St",
-                        Number = "123",
-                        City = "Springfield",
-                        State = "IL"
-                    },
-                    AddressNumber = "123",
-                    AddressZipCode = "12345"
-                }
-            };
+                Address address = await _getPassengerService.GetAddress(p.AddressZipCode, p.AddressNumber);
+
+                p.Address = address;
+            }
+
+            return passengers;
+
         }
 
         // GET: api/Passengers/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Passenger>> GetPassenger(string id)
+        [HttpGet("{cpf}")]
+        public async Task<ActionResult<Passenger>> GetPassenger(string cpf)
         {
-          if (_context.Passenger == null)
-          {
-              return NotFound();
-          }
-            var passenger = await _context.Passenger.FindAsync(id);
-
-            if (passenger == null)
+            if (_context.Passenger == null)
             {
-                return NotFound();
+                return null;
             }
 
+            Passenger passenger = await _context.Passenger.Where(p => p.Cpf.Replace(".","").Replace("-","") == cpf.Replace(".", "").Replace("-", "")).FirstOrDefaultAsync();
+
+            if (passenger == null) { return NotFound(); }
+
+            Address address = await _getPassengerService.GetAddress(passenger.AddressZipCode, passenger.AddressNumber);
+
+            passenger.Address = address;
+
             return passenger;
+
         }
 
         // PUT: api/Passengers/5
@@ -106,33 +106,25 @@ namespace OnTheFly.PassengersAPI.Controllers
             return Ok(passenger);
         }
 
-        // POST: api/Passengers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Passenger>> PostPassenger(Passenger passenger)
+        public async Task<ActionResult<Passenger>> PostPassenger(PassengerDTO passengerDTO)
         {
-          if (_context.Passenger == null)
-          {
-              return Problem("Entity set 'OnTheFlyPassengersAPIContext.Passenger'  is null.");
-          }
-            _context.Passenger.Add(passenger);
+            Passenger passenger = null;
+
             try
             {
+                Address address = await _createPassengerService.GetAddress(passengerDTO.AddressDTO);
+                passenger = await _createPassengerService.CreatePassenger(passengerDTO, address);
+
+                _context.Passenger.Add(passenger);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (Exception e)
             {
-                if (PassengerExists(passenger.Cpf))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(e.Message);
             }
 
-            return CreatedAtAction("GetPassenger", new { id = passenger.Cpf }, passenger);
+            return Ok(passenger);
         }
 
         // DELETE: api/Passengers/5
