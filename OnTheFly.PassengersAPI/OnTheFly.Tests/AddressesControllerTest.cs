@@ -61,14 +61,12 @@ namespace OnTheFly.Tests
             var controller = new AddressesController(context, service);
 
             var result = await controller.Get("15990220", "2");
+            var okObject = result.Result as OkObjectResult;
 
-            if (result.Result is OkObjectResult okObject)
-            {
-                var address = Assert.IsAssignableFrom<Address>(okObject.Value);
-                Assert.Equal(200, okObject.StatusCode);
-                Assert.IsType<Address>(address);
-                Assert.Equal("15990-220", address.ZipCode);
-            }
+            var address = Assert.IsAssignableFrom<Address>(okObject.Value);
+            Assert.Equal(200, okObject.StatusCode);
+            Assert.IsType<Address>(address);
+            Assert.Equal("15990-220", address.ZipCode);
         }
 
         [Fact]
