@@ -109,6 +109,7 @@ Consulta a API do VIACEP, a partir do CEP, informando apenas o número e complem
 
 - **Endpoint**: `POST /api/Passengers`
 - **Descrição**: Cadastra um novo passageiro.
+- **Parâmetros**: Nenhum.
 - **Corpo da requisição**:
     ```json
     {
@@ -254,6 +255,7 @@ Consulta a API do VIACEP, a partir do CEP, informando apenas o número e complem
 
 - **Endpoint**: `POST /api/addresses`
 - **Descrição**: Cadastra um novo endereço com base no código postal e número.
+- **Parâmetros**: Nenhum.
 - **Corpo da requisição**:
     ```json
     {
