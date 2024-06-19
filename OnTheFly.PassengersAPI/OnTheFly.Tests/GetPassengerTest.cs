@@ -11,7 +11,6 @@ namespace OnTheFly.Tests
         [Fact]
         public void Test1()
         {
-
         }
     }
 }

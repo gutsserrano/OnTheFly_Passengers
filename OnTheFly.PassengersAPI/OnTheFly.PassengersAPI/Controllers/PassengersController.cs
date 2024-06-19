@@ -39,20 +39,19 @@ namespace OnTheFly.PassengersAPI.Controllers
             }
 
             List<Passenger> passengers = await _context.Passenger.ToListAsync();
-
+            
             foreach(var p in passengers)
             {
                 Address address = await _getPassengerService.GetAddress(p.AddressZipCode, p.AddressNumber);
-
+                
                 p.Address = address;
             }
 
             return passengers;
-
         }
 
         [HttpGet("{cpf}")]
-        public async Task<ActionResult<Passenger>> GetPassenger(string cpf)
+        public async Task<ActionResult<object>> GetPassenger(string cpf, bool deleted = false)
         {
             if (_context.Passenger == null)
             {
@@ -60,14 +59,28 @@ namespace OnTheFly.PassengersAPI.Controllers
             }
 
             Passenger passenger = await _context.Passenger.Where(p => p.Cpf.Replace(".","").Replace("-","") == cpf.Replace(".", "").Replace("-", "")).FirstOrDefaultAsync();
+            
+            DeletedPassenger deletedPassenger = await _context.DeletedPassanger.Where(dp => dp.Cpf.Replace(".", "").Replace("-", "") == cpf.Replace(".", "").Replace("-", "")).FirstOrDefaultAsync();
 
-            if (passenger == null) { return NotFound(); }
+            if (PassengerExists(cpf) == true)
+            {
+                if (passenger == null) { return NotFound(); }
 
-            Address address = await _getPassengerService.GetAddress(passenger.AddressZipCode, passenger.AddressNumber);
+                Address address = await _getPassengerService.GetAddress(passenger.AddressZipCode, passenger.AddressNumber);
 
-            passenger.Address = address;
+                passenger.Address = address;
 
-            return passenger;
+                return passenger;
+            }
+            else if (DeletedPassengersExists(cpf) && deleted)
+            {
+                Address address = await _getPassengerService.GetAddress(deletedPassenger.AddressZipCode, deletedPassenger.AddressNumber);
+
+                deletedPassenger.Address = address;
+                
+                return deletedPassenger;
+            }
+            else { return NotFound(); }
 
         }
 
@@ -79,7 +92,8 @@ namespace OnTheFly.PassengersAPI.Controllers
                 return BadRequest();
             }
 
-            Passenger passenger = GetPassenger(passengerUpdateDTO.Cpf).Result.Value;
+            Object passengerAux = GetPassenger(passengerUpdateDTO.Cpf).Result.Value;
+            Passenger passenger = passengerAux as Passenger;
 
             _context.Entry(_updatePassengerService.UpdatePassenger(passenger, passengerUpdateDTO)).State = EntityState.Modified;
 
@@ -143,6 +157,11 @@ namespace OnTheFly.PassengersAPI.Controllers
         private bool PassengerExists(string id)
         {
             return (_context.Passenger?.Any(e => e.Cpf == id)).GetValueOrDefault();
+        }
+
+        private bool DeletedPassengersExists(string cpf)
+        {
+            return (_context.DeletedPassanger?.Any(e => e.Cpf == cpf)).GetValueOrDefault();
         }
     }
 }
