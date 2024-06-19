@@ -117,6 +117,9 @@ namespace OnTheFly.PassengersAPI.Controllers
         {
             Passenger passenger = null;
 
+            var cpfIsRegistered = _context.FindAsync<Passenger>(passengerDTO.Cpf);
+            if (cpfIsRegistered != null) return BadRequest("CPF já cadastrado.");
+
             try
             {
                 Address address = await _createPassengerService.GetAddress(passengerDTO.AddressDTO);
@@ -125,10 +128,7 @@ namespace OnTheFly.PassengersAPI.Controllers
                 _context.Passenger.Add(passenger);
                 await _context.SaveChangesAsync();
             }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            catch (Exception e) { return BadRequest(e.Message); }
 
             return Ok(passenger);
         }
