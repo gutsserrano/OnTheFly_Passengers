@@ -4,6 +4,7 @@ using Models;
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
 using OnTheFly.AddressAPI.Data;
+using OnTheFly.AddressApiServices.AddressApiServices;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -16,20 +17,21 @@ namespace Services
 {
     public class GetPassengerService
     {
+        private readonly IAddressApiService _api;
+
+        public GetPassengerService(IAddressApiService api)
+        {
+            _api = api;
+        }
+
         public async Task<Address> GetAddress(string zipCode, string number)
         {
-            using (HttpClient client = new HttpClient())
-            {
-                string addressApiUrl = $"https://localhost:7217/api/addresses/zipcode/{zipCode}/number/{number}";
-                HttpResponseMessage response = await client.GetAsync(addressApiUrl);
-                
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                Address viacepAddress = JsonConvert.DeserializeObject<Address>(jsonResponse);
+            Address? address = await _api.GetAddress(new AddressDTO { ZipCode = zipCode, Number = number });
 
-                if (viacepAddress.ZipCode == null) { throw new Exception("CEP inválido."); }
+            if (address == null)
+                throw new Exception("CEP inválido.");
 
-                return viacepAddress;
-            }
+            return address;
         }
     }
 }
