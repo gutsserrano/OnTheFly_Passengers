@@ -6,6 +6,11 @@ namespace OnTheFly.AddressApiServices.AddressApiServices
     {
         public async Task<Address?> GetAddress(AddressDTO addressDTO)
         {
+            return await CreateAddress(addressDTO);
+        }
+
+        public async Task<Address> CreateAddress(AddressDTO addressDTO)
+        {
             return new Address
             {
                 ZipCode = addressDTO.ZipCode,

@@ -19,6 +19,9 @@ namespace Services
             Address? address = await _api.GetAddress(addressDTO);
 
             if (address == null)
+                address = await _api.CreateAddress(addressDTO);
+
+            if (address == null)
                 throw new Exception("CEP inválido.");
 
             return address;
