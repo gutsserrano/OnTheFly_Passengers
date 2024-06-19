@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnTheFly.PassengersAPI.Data;
 
@@ -11,9 +12,10 @@ using OnTheFly.PassengersAPI.Data;
 namespace OnTheFly.PassengersAPI.Migrations
 {
     [DbContext(typeof(OnTheFlyPassengersAPIContext))]
-    partial class OnTheFlyPassengersAPIContextModelSnapshot : ModelSnapshot
+    [Migration("20240618194021_CreateDeletedPassangerTable")]
+    partial class CreateDeletedPassangerTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

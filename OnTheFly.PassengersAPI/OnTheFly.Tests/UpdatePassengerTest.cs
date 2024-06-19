@@ -44,7 +44,7 @@ namespace OnTheFly.Tests
 
             using (var context = new OnTheFlyPassengersAPIContext(_options))
             {
-                var controller = new PassengersController(context, new UpdatePassengerService());
+                var controller = new PassengersController(context, new UpdatePassengerService(), new CreatePassengerService(), new GetPassengerService(), new DeletePassengerService());
                 var passenger = controller.GetPassenger("22222").Result.Value;
                 passenger.Name = "Updated2";
 
