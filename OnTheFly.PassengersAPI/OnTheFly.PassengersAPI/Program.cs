@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OnTheFly.AddressApiServices.AddressApiServices;
 using OnTheFly.PassengersAPI.Data;
 using Services;
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,8 @@ builder.Services.AddDbContext<OnTheFlyPassengersAPIContext>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton<IAddressApiService, OnTheFlyAddressApi>();
 
 builder.Services.AddSingleton<UpdatePassengerService>();
 builder.Services.AddSingleton<CreatePassengerService>();

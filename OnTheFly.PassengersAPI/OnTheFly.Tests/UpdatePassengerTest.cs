@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using OnTheFly.AddressApiServices.AddressApiServices;
 using OnTheFly.PassengersAPI.Controllers;
 using OnTheFly.PassengersAPI.Data;
 using Services;
@@ -20,8 +21,8 @@ namespace OnTheFly.Tests
             _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            _createPassengerService = new CreatePassengerService();
-            _getPassengerService = new GetPassengerService();
+            _createPassengerService = new CreatePassengerService(new MockAddressApi());
+            _getPassengerService = new GetPassengerService(new MockAddressApi());
             _updatePassengerService = new UpdatePassengerService();
             _deletePassengerService = new DeletePassengerService();
 

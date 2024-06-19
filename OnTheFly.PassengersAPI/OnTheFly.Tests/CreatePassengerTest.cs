@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Moq;
+using OnTheFly.AddressApiServices.AddressApiServices;
 using OnTheFly.PassengersAPI.Controllers;
 using OnTheFly.PassengersAPI.Data;
 using Services;
@@ -21,8 +21,8 @@ namespace OnTheFly.Tests
             _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            _createPassengerService = new CreatePassengerService();
-            _getPassengerService = new GetPassengerService();
+            _createPassengerService = new CreatePassengerService(new MockAddressApi());
+            _getPassengerService = new GetPassengerService(new MockAddressApi());
             _updatePassengerService = new UpdatePassengerService();
             _deletePassengerService = new DeletePassengerService();
 
@@ -108,7 +108,7 @@ namespace OnTheFly.Tests
         public async Task PostPassenger_ReturnsCepBadRequest()
         {
             var context = new OnTheFlyPassengersAPIContext(_options);
-            var controller = new PassengersController(context, _updatePassengerService, _createPassengerService, _getPassengerService, _deletePassengerService);
+            var controller = new PassengersController(context, _updatePassengerService, new CreatePassengerService(new OnTheFlyAddressApi()), _getPassengerService, _deletePassengerService);
 
             var passengerDTO = new PassengerDTO
             {

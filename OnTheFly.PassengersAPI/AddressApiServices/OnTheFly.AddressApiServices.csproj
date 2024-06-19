@@ -8,9 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <ProjectReference Include="..\AddressApiServices\OnTheFly.AddressApiServices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
-    <ProjectReference Include="..\OnTheFly.AddressAPI\OnTheFly.AddressAPI.csproj" />
   </ItemGroup>
 
 </Project>

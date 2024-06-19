@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
 using OnTheFly.AddressAPI.Data;
+using OnTheFly.AddressApiServices.AddressApiServices;
 using OnTheFly.PassengersAPI.Controllers;
 using OnTheFly.PassengersAPI.Data;
 
@@ -35,8 +36,8 @@ namespace OnTheFly.Tests
         public PassengersController MakeController() => new PassengersController(
             new OnTheFlyPassengersAPIContext(_options),
             new Services.UpdatePassengerService(),
-            new Services.CreatePassengerService(),
-            new Services.GetPassengerService(),
+            new Services.CreatePassengerService(new MockAddressApi()),
+            new Services.GetPassengerService(new MockAddressApi()),
             new Services.DeletePassengerService()
         );
 
