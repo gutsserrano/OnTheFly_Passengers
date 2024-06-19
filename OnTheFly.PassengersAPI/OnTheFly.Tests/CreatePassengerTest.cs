@@ -16,7 +16,7 @@ namespace OnTheFly.Tests
         private readonly UpdatePassengerService _updatePassengerService;
         private readonly DeletePassengerService _deletePassengerService;
 
-        CreatePassengerTest()
+        public CreatePassengerTest()
         {
             _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -34,6 +34,8 @@ namespace OnTheFly.Tests
                 Name = "Gustavo Vono",
                 DtBirth = new DateTime(1997, 1, 3),
                 DtRegister = DateTime.Now,
+                Gender = 'M',
+                Phone = "14999999999",
                 Address = new Address
                 {
                     Street = "Rua Alberto Augusto Teixeira",
@@ -43,7 +45,8 @@ namespace OnTheFly.Tests
                     Complement = "My House"
                 },
                 AddressNumber = "123",
-                AddressZipCode = "17212-310"
+                AddressZipCode = "17212-310",
+                Restricted = false
             });
 
             context.SaveChanges();
@@ -57,9 +60,11 @@ namespace OnTheFly.Tests
 
             var passengerDTO = new PassengerDTO
             {
-                Cpf = "887.265.430-01",
+                Cpf = "394.464.798-00",
                 Name = "Gustavo Vono",
                 DtBirth = new DateTime(1997, 1, 3),
+                Gender = 'M',
+                Phone = "14999999999",
                 AddressDTO = new AddressDTO
                 {
                     ZipCode = "17212-310",
@@ -69,14 +74,14 @@ namespace OnTheFly.Tests
             };
 
             var result = await controller.PostPassenger(passengerDTO);
-
-            var createdPassenger = Assert.IsType<Passenger>(result.Value);
+            var okObject = result.Result as OkObjectResult;
+            var createdPassenger = Assert.IsAssignableFrom<Passenger>(okObject.Value);
             Assert.Equal(passengerDTO.Name, createdPassenger.Name);
             Assert.Equal(passengerDTO.Cpf, createdPassenger.Cpf);
         }
 
         [Fact]
-        public async Task PostPassenger_ReturnsBadRequest()
+        public async Task PostPassenger_ReturnsCpfBadRequest()
         {
             var context = new OnTheFlyPassengersAPIContext(_options);
             var controller = new PassengersController(context, _updatePassengerService, _createPassengerService, _getPassengerService, _deletePassengerService);
@@ -96,7 +101,31 @@ namespace OnTheFly.Tests
 
             var result = await controller.PostPassenger(passengerDTO);
             var badRequestResult = result.Result as BadRequestObjectResult;
-            Assert.Equal(badRequestResult.Value, "CPF já cadastrado");
+            Assert.Equal("CPF já cadastrado.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task PostPassenger_ReturnsCepBadRequest()
+        {
+            var context = new OnTheFlyPassengersAPIContext(_options);
+            var controller = new PassengersController(context, _updatePassengerService, _createPassengerService, _getPassengerService, _deletePassengerService);
+
+            var passengerDTO = new PassengerDTO
+            {
+                Cpf = "522.021.888-35",
+                Name = "Luis",
+                DtBirth = new DateTime(1997, 1, 3),
+                AddressDTO = new AddressDTO
+                {
+                    ZipCode = "17212-333",
+                    Number = "123",
+                    Complement = "My House"
+                }
+            };
+
+            var result = await controller.PostPassenger(passengerDTO);
+            var badRequestResult = result.Result as BadRequestObjectResult;
+            Assert.Equal("CEP inválido.", badRequestResult.Value);
         }
     }
 }

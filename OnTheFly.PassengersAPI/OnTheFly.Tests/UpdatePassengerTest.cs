@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using OnTheFly.PassengersAPI.Controllers;
 using OnTheFly.PassengersAPI.Data;
@@ -8,63 +9,106 @@ namespace OnTheFly.Tests
 {
     public class UpdatePassengerTest
     {
-        private DbContextOptions<OnTheFlyPassengersAPIContext> _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
+        private readonly DbContextOptions<OnTheFlyPassengersAPIContext> _options;
+        private readonly CreatePassengerService _createPassengerService;
+        private readonly GetPassengerService _getPassengerService;
+        private readonly UpdatePassengerService _updatePassengerService;
+        private readonly DeletePassengerService _deletePassengerService;
+
+        public UpdatePassengerTest()
+        {
+            _options = new DbContextOptionsBuilder<OnTheFlyPassengersAPIContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
+            _createPassengerService = new CreatePassengerService();
+            _getPassengerService = new GetPassengerService();
+            _updatePassengerService = new UpdatePassengerService();
+            _deletePassengerService = new DeletePassengerService();
+
+            var context = new OnTheFlyPassengersAPIContext(_options);
+
+            context.Passenger.Add(new Passenger
+            {
+                Cpf = "745.933.040-08",
+                Name = "Gustavo Vono",
+                DtBirth = new DateTime(1997, 1, 3),
+                DtRegister = DateTime.Now,
+                Gender = 'M',
+                Phone = "14999999999",
+                AddressNumber = "123",
+                AddressZipCode = "17212-310",
+                Restricted = false
+            });
+
+            context.SaveChanges();
+        }
 
         [Fact]
-        public void UpdateTest()
+        public async Task UpdateTest_ReturnsOk()
         {
             using (var context = new OnTheFlyPassengersAPIContext(_options))
             {
-                var passenger = new Passenger
+                var passengerDTO = new PassengerUpdateDTO
                 {
-                    Cpf = "22222",
-                    Name = "Test",
+                    Cpf = "745.933.040-08",
+                    Name = "Gustavo Vono",
+                    DtBirth = new DateTime(1997, 1, 3),
                     Gender = 'M',
-                    Phone = "123456789",
-                    DtBirth = DateTime.Now,
-                    DtRegister = DateTime.Now,
-                    Restricted = false,
-                    Address = new Address
-                    {
-                        ZipCode = "123456789",
-                        Street = "Test",
-                        Number = "123",
-                        Complement = "Test",
-                        City = "Test",
-                        State = "Test"
-                    },
-                    AddressZipCode = "12345678",
-                    AddressNumber = "123"
+                    Phone = "14999999999",
+                    Restricted = true
                 };
-                context.Passenger.Add(passenger);
-                context.SaveChanges();
-            }
 
+                var controller = new PassengersController(context, _updatePassengerService, _createPassengerService, _getPassengerService, _deletePassengerService);
+                var result = await controller.PutPassenger("745.933.040-08", passengerDTO);
+                var okObject = result.Result as OkObjectResult;
+                var updatedPassenger = Assert.IsAssignableFrom<Passenger>(okObject.Value);
+                Assert.True(updatedPassenger.Restricted);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateTest_InvalidCpf_ReturnsBadRequest()
+        {
             using (var context = new OnTheFlyPassengersAPIContext(_options))
             {
-                var controller = new PassengersController(context, new UpdatePassengerService(), new CreatePassengerService(), new GetPassengerService(), new DeletePassengerService());
-                var passenger = controller.GetPassenger("22222").Result.Value;
-                passenger.Name = "Updated2";
-
-                PassengerUpdateDTO pDto = new()
+                var passengerDTO = new PassengerUpdateDTO
                 {
-                    Cpf = passenger.Cpf,
-                    Name = passenger.Name,
-                    Gender = passenger.Gender,
-                    Phone = passenger.Phone,
-                    DtBirth = passenger.DtBirth,
-                    Restricted = passenger.Restricted
+                    Cpf = "bolacha",
+                    Name = "Gustavo Vono",
+                    DtBirth = new DateTime(1997, 1, 3),
+                    Gender = 'M',
+                    Phone = "14999999999",
+                    Restricted = true
                 };
 
-                controller.PutPassenger(passenger.Cpf, pDto);
-
-                var result = controller.GetPassenger(passenger.Cpf).Result;
-                Assert.Equal(result.Value.Name, "Updated2");
+                var controller = new PassengersController(context, _updatePassengerService, _createPassengerService, _getPassengerService, _deletePassengerService);
+                var result = await controller.PutPassenger("745.933.040-08", passengerDTO);
+                Assert.IsType<BadRequestResult>(result.Result);
             }
+        }
 
+        [Fact]
+        public async Task UpdateTest_Cpf_ReturnsNotFound()
+        {
+            using (var context = new OnTheFlyPassengersAPIContext(_options))
+            {
+                var passengerDTO = new PassengerUpdateDTO
+                {
+                    Cpf = "029.894.940-73",
+                    Name = "Gustavo Vono",
+                    DtBirth = new DateTime(1997, 1, 3),
+                    Gender = 'M',
+                    Phone = "14999999999",
+                    Restricted = true
+                };
+
+                var controller = new PassengersController(context, _updatePassengerService, _createPassengerService, _getPassengerService, _deletePassengerService);
+                var result = await controller.PutPassenger("029.894.940-73", passengerDTO);
+                var notFoundResult = result.Result as NotFoundObjectResult;
+
+                Assert.IsType<NotFoundObjectResult>(result.Result);
+                Assert.Equal("Passageiro não encontrado.", notFoundResult.Value);
+            }
         }
     }
 }
-

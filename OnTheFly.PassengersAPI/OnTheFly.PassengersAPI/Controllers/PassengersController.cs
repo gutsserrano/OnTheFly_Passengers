@@ -72,14 +72,15 @@ namespace OnTheFly.PassengersAPI.Controllers
         }
 
         [HttpPut("{cpf}")]
-        public async Task<IActionResult> PutPassenger(string cpf, PassengerUpdateDTO passengerUpdateDTO)
+        public async Task<ActionResult<Passenger>> PutPassenger(string cpf, PassengerUpdateDTO passengerUpdateDTO)
         {
             if (cpf != passengerUpdateDTO.Cpf)
             {
                 return BadRequest();
             }
 
-            Passenger passenger = GetPassenger(passengerUpdateDTO.Cpf).Result.Value;
+            Passenger? passenger = GetPassenger(passengerUpdateDTO.Cpf).Result.Value;
+            if (passenger == null) return NotFound("Passageiro não encontrado.");
 
             _context.Entry(_updatePassengerService.UpdatePassenger(passenger, passengerUpdateDTO)).State = EntityState.Modified;
 
@@ -107,7 +108,7 @@ namespace OnTheFly.PassengersAPI.Controllers
         {
             Passenger passenger = null;
 
-            var cpfIsRegistered = _context.FindAsync<Passenger>(passengerDTO.Cpf);
+            var cpfIsRegistered = await _context.FindAsync<Passenger>(passengerDTO.Cpf);
             if (cpfIsRegistered != null) return BadRequest("CPF já cadastrado.");
 
             try
